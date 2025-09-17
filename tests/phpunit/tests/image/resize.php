@@ -126,7 +126,7 @@ abstract class WP_Tests_Image_Resize_UnitTestCase extends WP_Image_UnitTestCase 
 
 		// Check if the editor supports the HEIC mime type.
 		if ( is_wp_error( $editor ) || ! $editor->supports_mime_type( 'image/heic' ) ) {
-			$this->markTestSkipped( 'No HEIC support in the editor engine on this system.' );
+			$this->markTestSkipped( sprintf( 'No HEIC support in the editor engine %s on this system.', $this->editor_engine ) );
 		}
 
 		$image = $this->resize_helper( $file, 25, 25 );
