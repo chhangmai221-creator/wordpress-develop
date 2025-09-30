@@ -170,6 +170,7 @@ class Test_WP_Customize_Nav_Menus extends WP_UnitTestCase {
 		$expected = array(
 			'id'         => "post-{$post_id}",
 			'title'      => 'Post Title',
+			'original_title'      => 'Post Title',
 			'type'       => 'post_type',
 			'type_label' => 'Post',
 			'object'     => 'post',
@@ -197,6 +198,7 @@ class Test_WP_Customize_Nav_Menus extends WP_UnitTestCase {
 		$expected = array(
 			'id'         => "post-{$page_id}",
 			'title'      => 'Page Title',
+			'original_title'      => 'Page Title',
 			'type'       => 'post_type',
 			'type_label' => 'Page',
 			'object'     => 'page',
@@ -223,6 +225,7 @@ class Test_WP_Customize_Nav_Menus extends WP_UnitTestCase {
 		$expected = array(
 			'id'         => "post-{$post_id}",
 			'title'      => 'Post Title',
+			'original_title'      => 'Post Title',
 			'type'       => 'post_type',
 			'type_label' => 'Post',
 			'object'     => 'post',
@@ -249,6 +252,7 @@ class Test_WP_Customize_Nav_Menus extends WP_UnitTestCase {
 		$expected = array(
 			'id'         => "term-{$term_id}",
 			'title'      => 'Term Title',
+			'original_title' => 'Term Title',
 			'type'       => 'taxonomy',
 			'type_label' => 'Category',
 			'object'     => 'category',
