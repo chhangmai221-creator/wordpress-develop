@@ -184,13 +184,14 @@ class Test_WP_Customize_Nav_Menus extends WP_UnitTestCase {
 
 		// Expected menu item array.
 		$expected = array(
-			'id'         => "post-{$post_id}",
-			'title'      => 'Post Title',
-			'type'       => 'post_type',
-			'type_label' => 'Post',
-			'object'     => 'post',
-			'object_id'  => (int) $post_id,
-			'url'        => get_permalink( (int) $post_id ),
+			'id'             => "post-{$post_id}",
+			'title'          => 'Post Title',
+			'original_title' => 'Post Title',
+			'type'           => 'post_type',
+			'type_label'     => 'Post',
+			'object'         => 'post',
+			'object_id'      => (int) $post_id,
+			'url'            => get_permalink( (int) $post_id ),
 		);
 
 		// Offset the query and get the second page of menu items.
@@ -216,13 +217,14 @@ class Test_WP_Customize_Nav_Menus extends WP_UnitTestCase {
 
 		// Expected menu item array.
 		$expected = array(
-			'id'         => "post-{$page_id}",
-			'title'      => 'Page Title',
-			'type'       => 'post_type',
-			'type_label' => 'Page',
-			'object'     => 'page',
-			'object_id'  => (int) $page_id,
-			'url'        => get_permalink( (int) $page_id ),
+			'id'             => "post-{$page_id}",
+			'title'          => 'Page Title',
+			'original_title' => 'Page Title',
+			'type'           => 'post_type',
+			'type_label'     => 'Page',
+			'object'         => 'page',
+			'object_id'      => (int) $page_id,
+			'url'            => get_permalink( (int) $page_id ),
 		);
 
 		$items = $menus->load_available_items_query( 'post_type', 'page', 0 );
@@ -242,13 +244,14 @@ class Test_WP_Customize_Nav_Menus extends WP_UnitTestCase {
 
 		// Expected menu item array.
 		$expected = array(
-			'id'         => "post-{$post_id}",
-			'title'      => 'Post Title',
-			'type'       => 'post_type',
-			'type_label' => 'Post',
-			'object'     => 'post',
-			'object_id'  => (int) $post_id,
-			'url'        => get_permalink( (int) $post_id ),
+			'id'             => "post-{$post_id}",
+			'title'          => 'Post Title',
+			'original_title' => 'Post Title',
+			'type'           => 'post_type',
+			'type_label'     => 'Post',
+			'object'         => 'post',
+			'object_id'      => (int) $post_id,
+			'url'            => get_permalink( (int) $post_id ),
 		);
 
 		$items = $menus->load_available_items_query( 'post_type', 'post', 0 );
@@ -268,13 +271,14 @@ class Test_WP_Customize_Nav_Menus extends WP_UnitTestCase {
 
 		// Expected menu item array.
 		$expected = array(
-			'id'         => "term-{$term_id}",
-			'title'      => 'Term Title',
-			'type'       => 'taxonomy',
-			'type_label' => 'Category',
-			'object'     => 'category',
-			'object_id'  => (int) $term_id,
-			'url'        => get_term_link( (int) $term_id, 'category' ),
+			'id'             => "term-{$term_id}",
+			'title'          => 'Term Title',
+			'original_title' => 'Term Title',
+			'type'           => 'taxonomy',
+			'type_label'     => 'Category',
+			'object'         => 'category',
+			'object_id'      => (int) $term_id,
+			'url'            => get_term_link( (int) $term_id, 'category' ),
 		);
 
 		$items = $menus->load_available_items_query( 'taxonomy', 'category', 0 );
@@ -785,24 +789,24 @@ class Test_WP_Customize_Nav_Menus extends WP_UnitTestCase {
 
 		$this->assertNotEmpty( $post_types );
 
-		foreach ( $post_types as $type ) {
-			$this->assertStringContainsString( 'available-menu-items-post_type-' . esc_attr( $type->name ), $template );
-			$this->assertMatchesRegularExpression( '#<h4 class="accordion-section-title".*>\s*<button type="button" class="accordion-trigger" aria-expanded="false" aria-controls=".*">\s*' . esc_html( $type->labels->name ) . '#', $template );
-			$this->assertStringContainsString( 'data-type="post_type"', $template );
-			$this->assertStringContainsString( 'data-object="' . esc_attr( $type->name ) . '"', $template );
-			$this->assertStringContainsString( 'data-type_label="' . esc_attr( $type->labels->singular_name ) . '"', $template );
+			foreach ( $post_types as $type ) {
+				$this->assertStringContainsString( 'available-menu-items-post_type-' . esc_attr( $type->name ), $template );
+				$this->assertMatchesRegularExpression( '#<h4 class="accordion-section-title".*>\s*<button type="button" class="accordion-trigger" aria-expanded="false" aria-controls=".*">\s*' . esc_html( $type->labels->name ) . '#', $template );
+				$this->assertStringContainsString( 'data-type="post_type"', $template );
+				$this->assertStringContainsString( 'data-object="' . esc_attr( $type->name ) . '"', $template );
+				$this->assertStringContainsString( 'data-type_label="' . esc_attr( $type->labels->singular_name ) . '"', $template );
 		}
 
 		$taxonomies = get_taxonomies( array( 'show_in_nav_menus' => true ), 'object' );
 
 		$this->assertNotEmpty( $taxonomies );
 
-		foreach ( $taxonomies as $tax ) {
-			$this->assertStringContainsString( 'available-menu-items-taxonomy-' . esc_attr( $tax->name ), $template );
-			$this->assertMatchesRegularExpression( '#<h4 class="accordion-section-title".*>\s*<button type="button" class="accordion-trigger" aria-expanded="false" aria-controls=".*">\s*' . esc_html( $tax->labels->name ) . '#', $template );
-			$this->assertStringContainsString( 'data-type="taxonomy"', $template );
-			$this->assertStringContainsString( 'data-object="' . esc_attr( $tax->name ) . '"', $template );
-			$this->assertStringContainsString( 'data-type_label="' . esc_attr( $tax->labels->singular_name ) . '"', $template );
+			foreach ( $taxonomies as $tax ) {
+				$this->assertStringContainsString( 'available-menu-items-taxonomy-' . esc_attr( $tax->name ), $template );
+				$this->assertMatchesRegularExpression( '#<h4 class="accordion-section-title".*>\s*<button type="button" class="accordion-trigger" aria-expanded="false" aria-controls=".*">\s*' . esc_html( $tax->labels->name ) . '#', $template );
+				$this->assertStringContainsString( 'data-type="taxonomy"', $template );
+				$this->assertStringContainsString( 'data-object="' . esc_attr( $tax->name ) . '"', $template );
+				$this->assertStringContainsString( 'data-type_label="' . esc_attr( $tax->labels->singular_name ) . '"', $template );
 		}
 
 		$this->assertStringContainsString( 'available-menu-items-custom_type', $template );

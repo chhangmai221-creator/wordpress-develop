@@ -105,7 +105,6 @@ class Test_WP_Customize_Nav_Menu_Item_Setting extends WP_UnitTestCase {
 			'classes'          => '',
 			'xfn'              => '',
 			'status'           => 'publish',
-			'original_title'   => '',
 			'nav_menu_term_id' => 0,
 			'_invalid'         => false,
 		);
@@ -173,11 +172,11 @@ class Test_WP_Customize_Nav_Menu_Item_Setting extends WP_UnitTestCase {
 			$menu_id,
 			0,
 			array(
-				'menu-item-type'      => 'post_type',
-				'menu-item-object'    => 'post',
-				'menu-item-object-id' => $post_id,
-				'menu-item-title'     => $item_title,
-				'menu-item-status'    => 'publish',
+			'menu-item-type'      => 'post_type',
+			'menu-item-object'    => 'post',
+			'menu-item-object-id' => $post_id,
+			'menu-item-title'     => $item_title,
+			'menu-item-status'    => 'publish',
 			)
 		);
 
@@ -199,7 +198,7 @@ class Test_WP_Customize_Nav_Menu_Item_Setting extends WP_UnitTestCase {
 		wp_update_nav_menu_item(
 			$other_menu_id,
 			$item_id,
-			array(
+				array(
 				'menu-item-title' => 'Hola',
 			)
 		);
@@ -597,7 +596,7 @@ class Test_WP_Customize_Nav_Menu_Item_Setting extends WP_UnitTestCase {
 			'classes'          => 'hello  inject',
 			'xfn'              => 'hello  inject',
 			'status'           => 'draft',
-			'original_title'   => 'Hi',
+			'original_title'   => 'Hi<script>unfilteredHtml()</script>',
 			'nav_menu_term_id' => 0,
 		);
 
