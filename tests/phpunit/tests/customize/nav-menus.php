@@ -144,12 +144,12 @@ class Test_WP_Customize_Nav_Menus extends WP_UnitTestCase {
 
 		// Home is included in menu items when page is zero.
 		$items = $menus->load_available_items_query( 'post_type', 'page', 0 );
-		$this->assertContains( $expected, $items );
+		$this->assertContains( $expected, $items, "Items:\n" . var_export( $items, true ) );
 
 		// Home is not included in menu items when page is larger than zero.
 		$items = $menus->load_available_items_query( 'post_type', 'page', 1 );
 		$this->assertNotEmpty( $items );
-		$this->assertNotContains( $expected, $items );
+		$this->assertNotContains( $expected, $items, "Items:\n" . var_export( $items, true ) );
 	}
 
 	/**
@@ -161,25 +161,26 @@ class Test_WP_Customize_Nav_Menus extends WP_UnitTestCase {
 		$menus = new WP_Customize_Nav_Menus( $this->wp_customize );
 
 		// Create page.
-		$post_id = self::factory()->post->create( array( 'post_title' => 'Post Title' ) );
+		$post_id = self::factory()->post->create( array( 'post_title' => 'Post &lt;strong&gt;Strong&lt;/strong&gt; Title' ) );
 
 		// Create pages.
 		self::factory()->post->create_many( 10 );
 
 		// Expected menu item array.
 		$expected = array(
-			'id'         => "post-{$post_id}",
-			'title'      => 'Post Title',
-			'type'       => 'post_type',
-			'type_label' => 'Post',
-			'object'     => 'post',
-			'object_id'  => intval( $post_id ),
-			'url'        => get_permalink( intval( $post_id ) ),
+			'id'             => "post-{$post_id}",
+			'title'          => 'Post <strong>Strong</strong> Title',
+			'original_title' => 'Post <strong>Strong</strong> Title',
+			'type'           => 'post_type',
+			'type_label'     => 'Post',
+			'object'         => 'post',
+			'object_id'      => (int) $post_id,
+			'url'            => get_permalink( (int) $post_id ),
 		);
 
 		// Offset the query and get the second page of menu items.
 		$items = $menus->load_available_items_query( 'post_type', 'post', 1 );
-		$this->assertContains( $expected, $items );
+		$this->assertContains( $expected, $items, "Items:\n" . var_export( $items, true ) );
 	}
 
 	/**
@@ -200,17 +201,18 @@ class Test_WP_Customize_Nav_Menus extends WP_UnitTestCase {
 
 		// Expected menu item array.
 		$expected = array(
-			'id'         => "post-{$page_id}",
-			'title'      => 'Page Title',
-			'type'       => 'post_type',
-			'type_label' => 'Page',
-			'object'     => 'page',
-			'object_id'  => intval( $page_id ),
-			'url'        => get_permalink( intval( $page_id ) ),
+			'id'             => "post-{$page_id}",
+			'title'          => 'Page Title',
+			'original_title' => 'Page Title',
+			'type'           => 'post_type',
+			'type_label'     => 'Page',
+			'object'         => 'page',
+			'object_id'      => (int) $page_id,
+			'url'            => get_permalink( (int) $page_id ),
 		);
 
 		$items = $menus->load_available_items_query( 'post_type', 'page', 0 );
-		$this->assertContains( $expected, $items );
+		$this->assertContains( $expected, $items, "Items:\n" . var_export( $items, true ) );
 	}
 
 	/**
@@ -226,17 +228,18 @@ class Test_WP_Customize_Nav_Menus extends WP_UnitTestCase {
 
 		// Expected menu item array.
 		$expected = array(
-			'id'         => "post-{$post_id}",
-			'title'      => 'Post Title',
-			'type'       => 'post_type',
-			'type_label' => 'Post',
-			'object'     => 'post',
-			'object_id'  => intval( $post_id ),
-			'url'        => get_permalink( intval( $post_id ) ),
+			'id'             => "post-{$post_id}",
+			'title'          => 'Post Title',
+			'original_title' => 'Post Title',
+			'type'           => 'post_type',
+			'type_label'     => 'Post',
+			'object'         => 'post',
+			'object_id'      => (int) $post_id,
+			'url'            => get_permalink( (int) $post_id ),
 		);
 
 		$items = $menus->load_available_items_query( 'post_type', 'post', 0 );
-		$this->assertContains( $expected, $items );
+		$this->assertContains( $expected, $items, "Items:\n" . var_export( $items, true ) );
 	}
 
 	/**
@@ -252,17 +255,18 @@ class Test_WP_Customize_Nav_Menus extends WP_UnitTestCase {
 
 		// Expected menu item array.
 		$expected = array(
-			'id'         => "term-{$term_id}",
-			'title'      => 'Term Title',
-			'type'       => 'taxonomy',
-			'type_label' => 'Category',
-			'object'     => 'category',
-			'object_id'  => intval( $term_id ),
-			'url'        => get_term_link( intval( $term_id ), 'category' ),
+			'id'             => "term-{$term_id}",
+			'title'          => 'Term Title',
+			'original_title' => 'Term Title',
+			'type'           => 'taxonomy',
+			'type_label'     => 'Category',
+			'object'         => 'category',
+			'object_id'      => (int) $term_id,
+			'url'            => get_term_link( (int) $term_id, 'category' ),
 		);
 
 		$items = $menus->load_available_items_query( 'taxonomy', 'category', 0 );
-		$this->assertContains( $expected, $items );
+		$this->assertContains( $expected, $items, "Items:\n" . var_export( $items, true ) );
 	}
 
 	/**
@@ -287,7 +291,7 @@ class Test_WP_Customize_Nav_Menus extends WP_UnitTestCase {
 		);
 
 		$items = $menus->load_available_items_query( 'custom_type', 'custom_object', 0 );
-		$this->assertContains( $expected, $items );
+		$this->assertContains( $expected, $items, "Items:\n" . var_export( $items, true ) );
 	}
 
 	/**

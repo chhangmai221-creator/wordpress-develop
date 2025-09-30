@@ -1049,7 +1049,7 @@ class WP_Test_REST_Users_Controller extends WP_Test_REST_Controller_Testcase {
 		$request = new WP_REST_Request( 'GET', sprintf( '/wp/v2/users/%d', $this->author_id ) );
 		$request->set_param( 'context', 'edit' );
 		$response = rest_get_server()->dispatch( $request );
-		$this->assertErrorResponse( 'rest_user_cannot_view', $response, 401 );
+		$this->assertErrorResponse( 'rest_forbidden_context', $response, 401 );
 	}
 
 	public function test_get_current_user() {
@@ -2740,6 +2740,104 @@ class WP_Test_REST_Users_Controller extends WP_Test_REST_Controller_Testcase {
 
 		$response = rest_get_server()->dispatch( $request );
 		$this->assertErrorResponse( 'rest_user_invalid_id', $response, 404 );
+	}
+
+	/**
+	 * @group 1018470
+	 */
+	public function test_cannot_get_single_user_with_edit_context_if_disallowed() {
+		$privileged_contributor = self::factory()->user->create_and_get( array( 'role' => 'subscriber' ) );
+		$privileged_contributor->add_cap( 'list_users' );
+
+		wp_set_current_user( $privileged_contributor->ID );
+
+		// Single request for a disallowed user returns an error.
+		$request = new WP_REST_Request( 'GET', '/wp/v2/users/1' );
+		$request->set_query_params( array( 'context' => 'edit' ) );
+		$response = rest_do_request( $request );
+		$this->assertErrorResponse( 'rest_forbidden_context', $response, 403 );
+	}
+
+	/**
+	 * @group 1018470
+	 */
+	public function test_cannot_see_user_in_collection_with_edit_context_if_disallowed() {
+		$privileged_contributor = self::factory()->user->create_and_get( array( 'role' => 'subscriber' ) );
+		$privileged_contributor->add_cap( 'list_users' );
+
+		wp_set_current_user( $privileged_contributor->ID );
+
+		// Collection request including a disallowed user omits that user.
+		$request = new WP_REST_Request( 'GET', '/wp/v2/users' );
+		$request->set_query_params(
+			array(
+				'context' => 'edit',
+				'include' => array( 1 ),
+			)
+		);
+		$response = rest_do_request( $request );
+		$data     = $response->get_data();
+
+		$this->assertIsArray( $data );
+		$this->assertEmpty( $data );
+	}
+
+	/**
+	 * @group 1018470
+	 */
+	public function test_cannot_see_other_user_in_collection_with_edit_context_if_specifically_disallowed() {
+		wp_set_current_user( self::$user );
+
+		add_filter(
+			'map_meta_cap',
+			static function ( $caps, $cap ) {
+				if ( 'edit_user' === $cap ) {
+					return array( 'do_not_allow' );
+				}
+
+				return $caps;
+			},
+			10,
+			2
+		);
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/users' );
+		$request->set_query_params(
+			array(
+				'context' => 'edit',
+				'include' => array( 1 ),
+			)
+		);
+		$response = rest_do_request( $request );
+		$data     = $response->get_data();
+
+		$this->assertIsArray( $data );
+		$this->assertEmpty( $data );
+	}
+
+	/**
+	 * @group 1018470
+	 */
+	public function test_can_get_user_if_specifically_allowed() {
+		wp_set_current_user( self::$subscriber );
+
+		add_filter(
+			'map_meta_cap',
+			static function ( $caps, $cap ) {
+				if ( 'edit_user' === $cap ) {
+					return array();
+				}
+
+				return $caps;
+			},
+			10,
+			2
+		);
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/users/' . self::$user );
+		$request->set_query_params( array( 'context' => 'edit' ) );
+		$response = rest_do_request( $request );
+		$this->check_user_data( get_userdata( self::$user ), $response->get_data(), 'edit', $response->get_links() );
 	}
 
 	/**

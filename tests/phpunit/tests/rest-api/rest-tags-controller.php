@@ -1269,6 +1269,68 @@ class WP_Test_REST_Tags_Controller extends WP_Test_REST_Controller_Testcase {
 		$this->assertSame( $num_queries, $wpdb->num_queries );
 	}
 
+	/**
+	 * @group 1018470
+	 */
+	public function test_cannot_get_single_term_with_edit_context_if_disallowed() {
+		add_filter(
+			'map_meta_cap',
+			static function ( $caps, $cap ) {
+				if ( 'edit_term' === $cap ) {
+					return array( 'do_not_allow' );
+				}
+
+				return $caps;
+			},
+			10,
+			2
+		);
+
+		$term = self::factory()->term->create();
+
+		wp_set_current_user( self::$editor );
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/tags/' . $term );
+		$request->set_query_params( array( 'context' => 'edit' ) );
+		$response = rest_do_request( $request );
+		$this->assertErrorResponse( 'rest_forbidden_context', $response, 403 );
+	}
+
+	/**
+	 * @group 1018470
+	 */
+	public function test_cannot_see_single_term_in_collection_with_edit_context_if_disallowed() {
+		add_filter(
+			'map_meta_cap',
+			static function ( $caps, $cap ) {
+				if ( 'edit_term' === $cap ) {
+					return array( 'do_not_allow' );
+				}
+
+				return $caps;
+			},
+			10,
+			2
+		);
+
+		$term = self::factory()->term->create();
+
+		wp_set_current_user( self::$editor );
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/tags' );
+		$request->set_query_params(
+			array(
+				'context' => 'edit',
+				'include' => $term,
+			)
+		);
+		$response = rest_do_request( $request );
+		$data     = $response->get_data();
+
+		$this->assertIsArray( $data );
+		$this->assertEmpty( $data );
+	}
+
 	public function additional_field_get_callback( $object, $request ) {
 		return 123;
 	}

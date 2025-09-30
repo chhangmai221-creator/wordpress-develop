@@ -4313,6 +4313,53 @@ class WP_Test_REST_Posts_Controller extends WP_Test_REST_Post_Type_Controller_Te
 	}
 
 	/**
+	 * @group 1018470
+	 */
+	public function test_cannot_get_other_users_single_post_with_edit_context_if_disallowed() {
+		$author_post = self::factory()->post->create(
+			array(
+				'post_password' => 'test',
+				'post_author'   => self::$author_id,
+			)
+		);
+
+		wp_set_current_user( self::$contributor_id );
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/posts/' . $author_post );
+		$request->set_query_params( array( 'context' => 'edit' ) );
+		$response = rest_do_request( $request );
+
+		$this->assertErrorResponse( 'rest_forbidden_context', $response, 403, 'Contributor should not be able to access Author post with edit context' );
+	}
+
+	/**
+	 * @group 1018470
+	 */
+	public function test_cannot_see_other_users_post_in_collection_with_edit_context_if_disallowed() {
+		$author_post = self::factory()->post->create(
+			array(
+				'post_password' => 'test',
+				'post_author'   => self::$author_id,
+			)
+		);
+
+		wp_set_current_user( self::$contributor_id );
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/posts' );
+		$request->set_query_params(
+			array(
+				'context' => 'edit',
+				'include' => $author_post,
+			)
+		);
+		$response = rest_do_request( $request );
+		$data     = $response->get_data();
+
+		$this->assertIsArray( $data );
+		$this->assertEmpty( $data );
+	}
+
+	/**
 	 * Internal function used to disable an insert query which
 	 * will trigger a wpdb error for testing purposes.
 	 */
