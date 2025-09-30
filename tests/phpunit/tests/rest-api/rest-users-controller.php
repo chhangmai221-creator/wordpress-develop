@@ -818,7 +818,7 @@ class WP_Test_REST_Users_Controller extends WP_Test_REST_Controller_Testcase {
 		$request = new WP_REST_Request( 'GET', sprintf( '/wp/v2/users/%d', $this->author_id ) );
 		$request->set_param( 'context', 'edit' );
 		$response = $this->server->dispatch( $request );
-		$this->assertErrorResponse( 'rest_user_cannot_view', $response, 401 );
+		$this->assertErrorResponse( 'rest_forbidden_context', $response, 401 );
 	}
 
 	public function test_get_current_user() {
@@ -2393,6 +2393,36 @@ class WP_Test_REST_Users_Controller extends WP_Test_REST_Controller_Testcase {
 		$data = $response->get_data();
 		$userdata = get_userdata( $data['id'] );
 		$this->check_user_data( $userdata, $data, 'edit', $response->get_links() );
+	}
+
+	/**
+	 * Callback for map_meta_cap filter to disallow edit_user capability
+	 *
+	 * @param array  $caps Required capabilities.
+	 * @param string $cap  Capability being checked.
+	 * @return array Modified capabilities.
+	 */
+	public function disallow_edit_user_cap( $caps, $cap ) {
+		if ( 'edit_user' === $cap ) {
+			return array( 'do_not_allow' );
+		}
+
+		return $caps;
+	}
+
+	/**
+	 * Callback for map_meta_cap filter to allow edit_user capability
+	 *
+	 * @param array  $caps Required capabilities.
+	 * @param string $cap  Capability being checked.
+	 * @return array Modified capabilities.
+	 */
+	public function allow_edit_user_cap( $caps, $cap ) {
+		if ( 'edit_user' === $cap ) {
+			return array();
+		}
+
+		return $caps;
 	}
 
 	protected function allow_user_to_manage_multisite() {

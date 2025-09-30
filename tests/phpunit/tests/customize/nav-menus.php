@@ -170,11 +170,12 @@ class Test_WP_Customize_Nav_Menus extends WP_UnitTestCase {
 		$expected = array(
 			'id'         => "post-{$post_id}",
 			'title'      => 'Post Title',
+			'original_title'      => 'Post Title',
 			'type'       => 'post_type',
 			'type_label' => 'Post',
 			'object'     => 'post',
-			'object_id'  => intval( $post_id ),
-			'url'        => get_permalink( intval( $post_id ) ),
+			'object_id'  => (int) $post_id,
+			'url'        => get_permalink( (int) $post_id ),
 		);
 
 		// Offset the query and get the second page of menu items.
@@ -197,11 +198,12 @@ class Test_WP_Customize_Nav_Menus extends WP_UnitTestCase {
 		$expected = array(
 			'id'         => "post-{$page_id}",
 			'title'      => 'Page Title',
+			'original_title'      => 'Page Title',
 			'type'       => 'post_type',
 			'type_label' => 'Page',
 			'object'     => 'page',
-			'object_id'  => intval( $page_id ),
-			'url'        => get_permalink( intval( $page_id ) ),
+			'object_id'  => (int) $page_id,
+			'url'        => get_permalink( (int) $page_id ),
 		);
 
 		$items = $menus->load_available_items_query( 'post_type', 'page', 0 );
@@ -223,11 +225,12 @@ class Test_WP_Customize_Nav_Menus extends WP_UnitTestCase {
 		$expected = array(
 			'id'         => "post-{$post_id}",
 			'title'      => 'Post Title',
+			'original_title'      => 'Post Title',
 			'type'       => 'post_type',
 			'type_label' => 'Post',
 			'object'     => 'post',
-			'object_id'  => intval( $post_id ),
-			'url'        => get_permalink( intval( $post_id ) ),
+			'object_id'  => (int) $post_id,
+			'url'        => get_permalink( (int) $post_id ),
 		);
 
 		$items = $menus->load_available_items_query( 'post_type', 'post', 0 );
@@ -249,11 +252,12 @@ class Test_WP_Customize_Nav_Menus extends WP_UnitTestCase {
 		$expected = array(
 			'id'         => "term-{$term_id}",
 			'title'      => 'Term Title',
+			'original_title'      => 'Term Title',
 			'type'       => 'taxonomy',
 			'type_label' => 'Category',
 			'object'     => 'category',
-			'object_id'  => intval( $term_id ),
-			'url'        => get_term_link( intval( $term_id ), 'category' ),
+			'object_id'  => (int) $term_id,
+			'url'        => get_term_link( (int) $term_id, 'category' ),
 		);
 
 		$items = $menus->load_available_items_query( 'taxonomy', 'category', 0 );

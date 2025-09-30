@@ -1002,6 +1002,21 @@ class WP_Test_REST_Tags_Controller extends WP_Test_REST_Controller_Testcase {
 		}
 	}
 
+	/**
+	 * Callback for map_meta_cap filter to disallow edit_term capability
+	 *
+	 * @param array  $caps Required capabilities.
+	 * @param string $cap  Capability being checked.
+	 * @return array Modified capabilities.
+	 */
+	public function disallow_edit_term_cap( $caps, $cap ) {
+		if ( 'edit_term' === $cap ) {
+			return array( 'do_not_allow' );
+		}
+
+		return $caps;
+	}
+
 	public function tearDown() {
 		_unregister_taxonomy( 'batman' );
 		_unregister_taxonomy( 'robin' );

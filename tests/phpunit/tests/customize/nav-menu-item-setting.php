@@ -1,3 +1,4 @@
+
 <?php
 /**
  * Tests WP_Customize_Nav_Menu_Item_Setting.
@@ -89,7 +90,6 @@ class Test_WP_Customize_Nav_Menu_Item_Setting extends WP_UnitTestCase {
 			'classes' => '',
 			'xfn' => '',
 			'status' => 'publish',
-			'original_title' => '',
 			'nav_menu_term_id' => 0,
 			'_invalid' => false,
 		);
@@ -153,13 +153,17 @@ class Test_WP_Customize_Nav_Menu_Item_Setting extends WP_UnitTestCase {
 
 		$menu_id = wp_create_nav_menu( 'Menu' );
 		$item_title = 'Greetings';
-		$item_id = wp_update_nav_menu_item( $menu_id, 0, array(
-			'menu-item-type' => 'post_type',
-			'menu-item-object' => 'post',
-			'menu-item-object-id' => $post_id,
-			'menu-item-title' => $item_title,
-			'menu-item-status' => 'publish',
-		) );
+		$item_id = wp_update_nav_menu_item(
+			$menu_id,
+			0,
+			array(
+				'menu-item-type'      => 'post_type',
+				'menu-item-object'    => 'post',
+				'menu-item-object-id' => $post_id,
+				'menu-item-title'     => $item_title,
+				'menu-item-status'    => 'publish',
+			)
+		);
 
 		$post = get_post( $item_id );
 		$menu_item = wp_setup_nav_menu_item( $post );
@@ -169,19 +173,23 @@ class Test_WP_Customize_Nav_Menu_Item_Setting extends WP_UnitTestCase {
 		$setting = new WP_Customize_Nav_Menu_Item_Setting( $this->wp_customize, $setting_id );
 
 		$value = $setting->value();
-		$this->assertEquals( $menu_item->title, $value['title'] );
-		$this->assertEquals( $menu_item->type, $value['type'] );
+		$this->assertSame( $menu_item->title, $value['title'] );
+		$this->assertSame( $menu_item->type, $value['type'] );
 		$this->assertEquals( $menu_item->object_id, $value['object_id'] );
-		$this->assertEquals( $menu_id, $value['nav_menu_term_id'] );
-		$this->assertEquals( 'Hello World', $value['original_title'] );
+		$this->assertSame( $menu_id, $value['nav_menu_term_id'] );
+		$this->assertSame( 'Hello World', $value['original_title'] );
 
 		$other_menu_id = wp_create_nav_menu( 'Menu2' );
-		wp_update_nav_menu_item( $other_menu_id, $item_id, array(
-			'menu-item-title' => 'Hola',
-		) );
+		wp_update_nav_menu_item(
+			$other_menu_id,
+			$item_id,
+			array(
+				'menu-item-title' => 'Hola',
+			)
+		);
 		$value = $setting->value();
-		$this->assertEquals( 'Hola', $value['title'] );
-		$this->assertEquals( $other_menu_id, $value['nav_menu_term_id'] );
+		$this->assertSame( 'Hola', $value['title'] );
+		$this->assertSame( $other_menu_id, $value['nav_menu_term_id'] );
 	}
 
 	/**
@@ -208,8 +216,8 @@ class Test_WP_Customize_Nav_Menu_Item_Setting extends WP_UnitTestCase {
 		$setting = new WP_Customize_Nav_Menu_Item_Setting( $this->wp_customize, $setting_id );
 
 		$value = $setting->value();
-		$this->assertEquals( '', $value['title'] );
-		$this->assertEquals( $original_title, $value['original_title'] );
+		$this->assertSame( '', $value['title'] );
+		$this->assertSame( $original_title, $value['original_title'] );
 	}
 
 	/**
@@ -224,13 +232,17 @@ class Test_WP_Customize_Nav_Menu_Item_Setting extends WP_UnitTestCase {
 
 		$menu_id = wp_create_nav_menu( 'Menu' );
 		$item_title = 'Greetings';
-		$item_id = wp_update_nav_menu_item( $menu_id, 0, array(
-			'menu-item-type' => 'taxonomy',
-			'menu-item-object' => 'category',
-			'menu-item-object-id' => $tax_id,
-			'menu-item-title' => $item_title,
-			'menu-item-status' => 'publish',
-		) );
+		$item_id = wp_update_nav_menu_item(
+			$menu_id,
+			0,
+			array(
+				'menu-item-type'      => 'taxonomy',
+				'menu-item-object'    => 'category',
+				'menu-item-object-id' => $tax_id,
+				'menu-item-title'     => $item_title,
+				'menu-item-status'    => 'publish',
+			)
+		);
 
 		$post = get_post( $item_id );
 		$menu_item = wp_setup_nav_menu_item( $post );
@@ -240,11 +252,11 @@ class Test_WP_Customize_Nav_Menu_Item_Setting extends WP_UnitTestCase {
 		$setting = new WP_Customize_Nav_Menu_Item_Setting( $this->wp_customize, $setting_id );
 
 		$value = $setting->value();
-		$this->assertEquals( $menu_item->title, $value['title'] );
-		$this->assertEquals( $menu_item->type, $value['type'] );
+		$this->assertSame( $menu_item->title, $value['title'] );
+		$this->assertSame( $menu_item->type, $value['type'] );
 		$this->assertEquals( $menu_item->object_id, $value['object_id'] );
-		$this->assertEquals( $menu_id, $value['nav_menu_term_id'] );
-		$this->assertEquals( 'Salutations', $value['original_title'] );
+		$this->assertSame( $menu_id, $value['nav_menu_term_id'] );
+		$this->assertSame( 'Salutations', $value['original_title'] );
 	}
 
 	/**
@@ -271,8 +283,8 @@ class Test_WP_Customize_Nav_Menu_Item_Setting extends WP_UnitTestCase {
 		$setting = new WP_Customize_Nav_Menu_Item_Setting( $this->wp_customize, $setting_id );
 
 		$value = $setting->value();
-		$this->assertEquals( $menu_item->type_label, 'Custom Label' );
-		$this->assertEquals( $menu_item->type_label, $value['type_label'] );
+		$this->assertSame( $menu_item->type_label, 'Custom Label' );
+		$this->assertSame( $menu_item->type_label, $value['type_label'] );
 	}
 
 	/**
@@ -486,7 +498,7 @@ class Test_WP_Customize_Nav_Menu_Item_Setting extends WP_UnitTestCase {
 			'classes' => 'hello " inject="',
 			'xfn' => 'hello " inject="',
 			'status' => 'forbidden',
-			'original_title' => 'Hi<script>unfilteredHtml()</script>',
+			'original_title'   => 'Hi<script>unfilteredHtml()</script>',
 			'nav_menu_term_id' => 'heilo',
 			'_invalid' => false,
 		);
@@ -505,7 +517,7 @@ class Test_WP_Customize_Nav_Menu_Item_Setting extends WP_UnitTestCase {
 			'classes' => 'hello  inject',
 			'xfn' => 'hello  inject',
 			'status' => 'draft',
-			'original_title' => 'Hi',
+			'original_title'   => 'Hi<script>unfilteredHtml()</script>',
 			'nav_menu_term_id' => 0,
 		);
 
