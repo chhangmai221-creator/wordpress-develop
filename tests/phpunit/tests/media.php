@@ -6601,6 +6601,17 @@ EOF;
 				'set_up'   => null,
 				'expected' => true,
 			),
+			'dequeued'                    => array(
+				'set_up'   => static function (): void {
+					add_action(
+						'wp_enqueue_scripts',
+						static function () {
+							wp_dequeue_style( 'wp-img-auto-sizes-contain' );
+						}
+					);
+				},
+				'expected' => false,
+			),
 			'filtered_off'                => array(
 				'set_up'   => static function (): void {
 					add_filter( 'wp_img_tag_add_auto_sizes', '__return_false' );
