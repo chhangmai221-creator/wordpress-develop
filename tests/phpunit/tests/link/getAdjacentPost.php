@@ -350,4 +350,241 @@ class Tests_Link_GetAdjacentPost extends WP_UnitTestCase {
 		$excluded_terms[] = $this->exclude_term;
 		return $excluded_terms;
 	}
+
+	/**
+	 * @ticket 63920
+	 */
+	public function test_get_adjacent_post_returns_empty_string_when_wp_get_object_terms_returns_wp_error() {
+		register_taxonomy( 'wptests_error_tax', 'post' );
+
+		$term1_id = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_error_tax',
+			)
+		);
+
+		$post1_id = self::factory()->post->create(
+			array(
+				'post_title' => 'First',
+				'post_date'  => '2025-09-01 12:00:00',
+			)
+		);
+
+		$post2_id = self::factory()->post->create(
+			array(
+				'post_title' => 'Second',
+				'post_date'  => '2025-09-02 12:00:00',
+			)
+		);
+
+		wp_set_post_terms( $post1_id, array( $term1_id ), 'wptests_error_tax' );
+		wp_set_post_terms( $post2_id, array( $term1_id ), 'wptests_error_tax' );
+
+		$this->go_to( get_permalink( $post2_id ) );
+
+		add_filter(
+			'wp_get_object_terms',
+			static function () {
+				return new WP_Error( 'test_error', 'Test error from wp_get_object_terms' );
+			}
+		);
+		$result = get_adjacent_post( true, '', true, 'wptests_error_tax' );
+		$this->assertSame( '', $result );
+	}
+
+	/**
+	 * @ticket 63920
+	 */
+	public function test_get_adjacent_post_empty_term_array_after_exclusions() {
+		register_taxonomy( 'wptests_tax', 'post' );
+
+		$term1_id = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+			)
+		);
+
+		$post1_id = self::factory()->post->create(
+			array(
+				'post_title' => 'First',
+				'post_date'  => '2025-01-01 12:00:00',
+			)
+		);
+
+		$post2_id = self::factory()->post->create(
+			array(
+				'post_title' => 'Second',
+				'post_date'  => '2025-02-01 12:00:00',
+			)
+		);
+
+		wp_set_post_terms( $post1_id, array( $term1_id ), 'wptests_tax' );
+		wp_set_post_terms( $post2_id, array( $term1_id ), 'wptests_tax' );
+
+		$this->go_to( get_permalink( $post2_id ) );
+		$result = get_adjacent_post( true, array( $term1_id ), true, 'wptests_tax' );
+		$this->assertSame( '', $result );
+	}
+
+	/**
+	 * @ticket 63920
+	 */
+	public function test_get_adjacent_post_term_array_processing_order() {
+		register_taxonomy( 'wptests_tax', 'post' );
+
+		$term1_id = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+			)
+		);
+		$term2_id = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+			)
+		);
+
+		$post1_id = self::factory()->post->create(
+			array(
+				'post_title' => 'First',
+				'post_date'  => '2025-01-01 12:00:00',
+			)
+		);
+
+		$post2_id = self::factory()->post->create(
+			array(
+				'post_title' => 'Second',
+				'post_date'  => '2025-02-01 12:00:00',
+			)
+		);
+
+		$post3_id = self::factory()->post->create(
+			array(
+				'post_title' => 'Third',
+				'post_date'  => '2025-03-01 12:00:00',
+			)
+		);
+
+		// All posts have term1. post_two has term1 and term2.
+		wp_set_post_terms( $post1_id, array( $term1_id ), 'wptests_tax' );
+		wp_set_post_terms( $post2_id, array( $term1_id, $term2_id ), 'wptests_tax' );
+		wp_set_post_terms( $post3_id, array( $term1_id ), 'wptests_tax' );
+
+		// Set the current post to post_two.
+		$this->go_to( get_permalink( $post2_id ) );
+
+		// When we exclude term2, we should still get adjacent posts that share term1.
+		$result = get_adjacent_post( true, array( $term2_id ), true, 'wptests_tax' );
+
+		// Should find post_one (previous post that shares term1).
+		$this->assertInstanceOf( WP_Post::class, $result );
+		$this->assertEquals( $post1_id, $result->ID );
+
+		// Test next post.
+		$result = get_adjacent_post( true, array( $term2_id ), false, 'wptests_tax' );
+
+		// Should find post_three (next post that shares term1).
+		$this->assertInstanceOf( WP_Post::class, $result );
+		$this->assertEquals( $post3_id, $result->ID );
+	}
+
+	/**
+	 * @ticket 63920
+	 */
+	public function test_get_adjacent_post_invalid_taxonomy() {
+		self::factory()->post->create(
+			array(
+				'post_title' => 'First',
+				'post_date'  => '2025-01-01 12:00:00',
+			)
+		);
+
+		$post2_id = self::factory()->post->create(
+			array(
+				'post_title' => 'Second',
+				'post_date'  => '2025-02-01 12:00:00',
+			)
+		);
+
+		$this->go_to( get_permalink( $post2_id ) );
+		$result = get_adjacent_post( true, '', true, 'invalid_taxonomy' );
+		$this->assertNull( $result );
+	}
+
+	/**
+	 * @ticket 41131
+	 */
+	public function test_get_adjacent_post_cache() {
+		// Need some sample posts to test adjacency.
+		$post_one = self::factory()->post->create_and_get(
+			array(
+				'post_title' => 'First',
+				'post_date'  => '2012-01-01 12:00:00',
+			)
+		);
+
+		$post_two = self::factory()->post->create_and_get(
+			array(
+				'post_title' => 'Second',
+				'post_date'  => '2012-02-01 12:00:00',
+			)
+		);
+
+		$post_three = self::factory()->post->create_and_get(
+			array(
+				'post_title' => 'Third',
+				'post_date'  => '2012-03-01 12:00:00',
+			)
+		);
+
+		$post_four = self::factory()->post->create_and_get(
+			array(
+				'post_title' => 'Fourth',
+				'post_date'  => '2012-04-01 12:00:00',
+			)
+		);
+
+		// Assign some terms.
+		wp_set_object_terms( $post_one->ID, 'WordPress', 'category', false );
+		wp_set_object_terms( $post_three->ID, 'WordPress', 'category', false );
+
+		wp_set_object_terms( $post_two->ID, 'plugins', 'post_tag', false );
+		wp_set_object_terms( $post_four->ID, 'plugins', 'post_tag', false );
+
+		// Test normal post adjacency.
+		$this->go_to( get_permalink( $post_two->ID ) );
+
+		// Test getting the right result.
+		$first_run = get_adjacent_post( false, '', true );
+		$this->assertEquals( $post_one, $first_run, 'Did not get first post when on second post' );
+		$this->assertNotEquals( $post_two, $first_run, 'Got second post when on second post' );
+
+		// Query count to test caching.
+		$num_queries = get_num_queries();
+		$second_run  = get_adjacent_post( false, '', true );
+		$this->assertNotEquals( $post_two, $second_run, 'Got second post when on second post on second run' );
+		$this->assertEquals( $post_one, $second_run, 'Did not get first post when on second post on second run' );
+		$this->assertSame( $num_queries, get_num_queries() );
+
+		// Test creating new post busts cache.
+		$post_five   = self::factory()->post->create_and_get(
+			array(
+				'post_title' => 'Five',
+				'post_date'  => '2012-04-01 12:00:00',
+			)
+		);
+		$num_queries = get_num_queries();
+
+		$this->assertEquals( $post_one, get_adjacent_post( false, '', true ), 'Did not get first post after new post is added' );
+		$this->assertSame( get_num_queries() - $num_queries, 1, 'Number of queries run was not one after new post is added' );
+
+		$this->assertEquals( $post_four, get_adjacent_post( true, '', false ), 'Did not get forth post after new post is added' );
+		$num_queries = get_num_queries();
+		$this->assertEquals( $post_four, get_adjacent_post( true, '', false ), 'Did not get forth post after new post is added' );
+		$this->assertSame( $num_queries, get_num_queries() );
+		wp_set_object_terms( $post_four->ID, 'themes', 'post_tag', false );
+
+		$num_queries = get_num_queries();
+		$this->assertEquals( $post_four, get_adjacent_post( true, '', false ), 'Result of function call is wrong after after adding new term' );
+		$this->assertSame( get_num_queries() - $num_queries, 2, 'Number of queries run was not two after adding new term' );
+	}
 }
